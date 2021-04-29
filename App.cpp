@@ -10,11 +10,9 @@
 App::App()
 {
 	// default dimensions will be 4:3 master race aspsect ratio
-	// enhanced with the yet more superior resoltuin of 1024x768
-	m_windowDimensions = { 1024, 768 };
-	m_window.create(sf::VideoMode(m_windowDimensions.x, m_windowDimensions.y), "FPG");
+	// enhanced with the yet more superior resolution of 1024x768
 	m_running = true;
-	m_window.setFramerateLimit(GAME_FPS_CAP);
+	m_renderer.init(&m_window);
 }
 
 void App::handleEvents()
@@ -24,15 +22,14 @@ void App::handleEvents()
 	{
 		if (event.type == sf::Event::Closed)
 		{
+			// when the window is closed, ensure that the client/server shutdown properly
+			m_client.disconnect();
+			m_server.shutdown();
+
 			m_window.close();
 			m_running = false;
 		}
 	}
-}
-
-void foo()
-{
-
 }
 
 void App::run()
@@ -51,27 +48,30 @@ void App::run()
 	}
 	else if (input == 's')
 	{
-		//std::cout << "attemping to host server on ip " << sf::IpAddress::getLocalAddress().toString() << std::endl;
-		//m_server.start();
+		std::cout << "Enter server ip to be hosted on: ";
+		std::string ip;
+		std::getline(std::cin, ip);
+		m_server.start(ip);
 	}
-
-	std::thread thread(foo);
 
 	// hit it twice
 	while (m_running)
 	{
 		handleEvents();
-		m_window.clear(sf::Color::White);
+		m_renderer.clearWindow();
 
 		if (input == 's')
 		{
-			m_server.update();
+	//		m_server.update();
 			m_server.renderClients(m_window);
 		}
 		else if (input == 'c')
+		{
 			m_client.update();
+			m_renderer.renderClients(m_client);
+		}
 
-		m_window.display();
+		m_renderer.updateWindow();
 	}
 
 	// should close the other threads from server/client

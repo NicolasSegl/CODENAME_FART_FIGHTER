@@ -6,23 +6,40 @@
 Server::Server()
 	: NetworkBase()
 {
-	m_serverIPAddress.host = ENET_HOST_ANY;
-	m_serverHost = enet_host_create(&m_serverIPAddress, 8, 2, 0, 0);
-	if (m_serverHost == nullptr)
-	{
-		std::cout << "Error creating ENet server host\n";
-	}
+	isHosting = false;
+}
+
+void Server::shutdown()
+{
+	if (isHosting)
+		m_hostThread.join();
+}
+
+Server::~Server()
+{
+	shutdown();
+	enet_host_destroy(m_serverHost);
 }
 
 void Server::sendData()
 {
-	/*char data[] = "data";
+	for (auto& client : m_clients)
+	{
+		EntityUpdatePacket packet;
+		packet.packetRequest = PacketRequest::EntityUpdate;
+		packet.clientID = client->id;
+		packet.position = client->character->getPos();
+		//std::cout << "pos: " << packet.position.x << std::endl;
+		packet.sendToAllPeers(m_serverHost, false);
+	}
+}
 
-	// CHANGE SERVER_IP TO CLIENT'S IP THAT DATA IS BEING SENT TO
-	if (m_sendSocket.send(data, sizeof(data), m_serverIP, m_clientPort) != sf::Socket::Done)
-		std::cout << "failed to send\n";
-
-	m_packetSent = true;*/
+void Server::sendIDToClient(ENetPeer* peer)
+{
+	static Packet packet;
+	packet.clientID = m_latestID;
+	packet.packetRequest = PacketRequest::SendID;
+	packet.sendToPeer(peer, true);
 }
 
 bool Server::clientInit()
@@ -36,12 +53,34 @@ bool Server::clientInit()
 					return;
 	*/
 
-	m_clients[m_latestID] = new Client;
-	m_clients[m_latestID]->serverCreationInit();
-	m_clients[m_latestID]->id = m_latestID;
-
+	// create a new client and initialize it with default values
+	m_clients.push_back(new Client);
+	m_clients[m_clients.size() - 1]->serverCreationInit();
+	m_clients[m_clients.size() - 1]->id = m_latestID;
 	m_latestID++;
+
 	return true;
+}
+
+void Server::updateClientCharacterList()
+{
+	static NewEntityPacket packet;
+	packet.packetRequest = PacketRequest::EntityListChange;
+	packet.newCharacter = *(m_clients[m_clients.size() - 1]->character);
+	packet.sendToAllPeers(m_serverHost, true);
+}
+
+void Server::updateEntity(Packet* packet)
+{
+	EntityUpdatePacket* packetReceived = (EntityUpdatePacket*)(packet);
+
+	// update the position of the sprite to be drawn
+	m_clients[packetReceived->clientID]->character->setPos(packetReceived->position);
+	m_clients[packetReceived->clientID]->character->sprite.setPosition(sf::Vector2f
+	(
+		packetReceived->position.x,
+		packetReceived->position.y
+	));
 }
 
 void Server::receiveData()
@@ -52,51 +91,73 @@ void Server::receiveData()
 	{
 		switch (event.type)
 		{
-		case ENET_EVENT_TYPE_CONNECT:
-			std::cout << "Connection detected\n";
-
-			// if the client is successfully created
-			if (clientInit())
+			case ENET_EVENT_TYPE_CONNECT:
 			{
-				Packet packet;
-				packet.packetRequest = PacketRequest::IDSendback;
-				packet.clientID = m_latestID - 1;
-
-				// check if packet is successfully created
-				ENetPacket* enetPacket = enet_packet_create(&packet, sizeof(packet), ENET_PACKET_FLAG_RELIABLE);
+				std::cout << "A client has connected from: " << &event.peer->address.host << std::endl;
 				// sends to the same peer that connected...
-				enet_peer_send(event.peer, 0, enetPacket);
+				sendIDToClient(event.peer);
+				break;
 			}
-			break;
-
-		case ENET_EVENT_TYPE_RECEIVE:
-			Packet* packetReceived = (Packet*)(event.packet->data);
-
-			if (!m_clients[packetReceived->clientID]->connected)
+			case ENET_EVENT_TYPE_RECEIVE:
 			{
-				if (packetReceived->packetRequest == PacketRequest::SucessfulIDSendback)
+				Packet* packetReceived = (Packet*)(event.packet->data);
+
+				if (packetReceived->packetRequest == PacketRequest::AcknowledgeID)
 				{
-					m_clients[packetReceived->clientID]->connected = true;
+					if (clientInit())
+					{
+						std::cout << "Client " << packetReceived->clientID << " successfully initialized\n";
+						updateClientCharacterList();
+					}
+					else
+						std::cout << "Client failed to initialize\n";
 					break;
 				}
-			}
-			else
-			{
-				switch (packetReceived->packetRequest)
+				if (m_clients[packetReceived->clientID])
 				{
-				case PacketRequest::UpdateCharacter:
-					m_clients[packetReceived->clientID]->character->m_sprite.setPosition(sf::Vector2f(packetReceived->position.x, packetReceived->position.y));
-					break;
+					switch (packetReceived->packetRequest)
+					{
+						case PacketRequest::EntityUpdate:
+						{
+							updateEntity(packetReceived);
+							break;
+						}
+						case PacketRequest::ClientDisconnect:
+						{
+							clientDisconnect(packetReceived);
+							break;
+						}
+					}
 				}
+
+				enet_packet_destroy(event.packet);
+				break;
+			}
+			case ENET_EVENT_TYPE_DISCONNECT:
+			{
+				break;
 			}
 		}
 	}
 }
 
-void Server::start()
+void Server::clientDisconnect(Packet* packet)
 {
+	std::cout << "Client " << packet->clientID << "has disconnected\n";
+	delete m_clients[packet->clientID];
+	m_clients[packet->clientID] = nullptr;
+}
+
+void Server::start(std::string ip)
+{
+	enet_address_set_host(&m_serverIPAddress, ip.c_str());
+
+	m_serverIPAddress.host = ENET_HOST_ANY;
+	m_serverHost = enet_host_create(&m_serverIPAddress, PLAYER_CAP, 2, 0, 0);
+	if (m_serverHost == nullptr)
+		std::cout << "Error creating ENet server host\n";
 	// create a thread that will send/receive data for the server.
-	static std::thread hostThread(&Server::handleClients, this);
+	m_hostThread = std::thread(&Server::handleClients, this);
 }
 
 void Server::handleClients()
@@ -108,7 +169,7 @@ void Server::handleClients()
 void Server::update()
 {
 	receiveData();
-	//sendData();
+	sendData();
 }
 
 void Server::renderClients(sf::RenderWindow& window)
@@ -117,7 +178,7 @@ void Server::renderClients(sf::RenderWindow& window)
 	{
 		if (client)
 		{
-			window.draw(client->character->m_sprite);
+			window.draw(client->character->sprite);
 		}
 	}
 }

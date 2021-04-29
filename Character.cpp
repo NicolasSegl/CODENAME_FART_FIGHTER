@@ -1,4 +1,7 @@
 #include "Character.h"
+#include "Packet.h"
+
+#include <iostream>
 
 const int MAX_CHARACTER_HORIZONTAL_VELOCITY = 7;
 
@@ -9,11 +12,11 @@ Character::Character()
 
 void Character::init()
 {
-	m_sprite.setSize(sf::Vector2f(50, 100));
-	m_sprite.setFillColor(sf::Color::Black);
+	sprite.setSize(sf::Vector2f(50, 100));
+	sprite.setFillColor(sf::Color::Black);
 	m_pos = { 500, 500 };
 	m_vel = { 0, 0 };
-	m_sprite.setPosition(m_pos.x, m_pos.y);
+	sprite.setPosition(m_pos.x, m_pos.y);
 }
 
 void Character::update()
@@ -50,5 +53,24 @@ void Character::updateKinematicStates()
 	// update the position of the character
 	m_pos.x += m_vel.x;
 	m_pos.y += m_vel.y;
-	m_sprite.setPosition(m_pos.x, m_pos.y);
+	sprite.setPosition(m_pos.x, m_pos.y);
+}
+
+// note that this copy instructor is crucial for sending the initial characters to the clients
+// when the server starts. without it, reading violations are thrown when trying to copy
+
+Character::Character(const Character& copyCharacter)
+{
+	m_pos = copyCharacter.m_pos;
+	// for some reason, SFML does not like copying one sprite into another
+	// and so i am manually doing the parts we need
+	sprite.setPosition(copyCharacter.sprite.getPosition());
+	sprite.setSize(copyCharacter.sprite.getSize());
+	sprite.setFillColor(copyCharacter.sprite.getFillColor());
+}
+
+void Character::updateFromServer(EntityUpdatePacket* packet)
+{
+	m_pos = packet->position;
+	sprite.setPosition(m_pos.x, m_pos.y);
 }
