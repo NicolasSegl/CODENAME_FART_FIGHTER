@@ -1,9 +1,11 @@
 #include "Client.h"
 #include <iostream>
+#include <mutex>
 
 Client::Client()
 	: NetworkBase()
 {
+	id = -1;
 	init();
 	m_clientHost = enet_host_create(nullptr, 1, 2, 0, 0);
 	if (m_clientHost == nullptr)
@@ -59,25 +61,36 @@ void Client::receiveData()
 			Packet* packetReceived = (Packet*)(event.packet->data);
 			switch (packetReceived->packetRequest)
 			{
-			case PacketRequest::SendID:
-			{
-				sendIDBackToServer(packetReceived);
-				break;
-			}
-			case PacketRequest::EntityListChange:
-			{
-				NewEntityPacket* receivedPacket = (NewEntityPacket*)(event.packet->data);
-				m_serverCharacters.push_back(receivedPacket->newCharacter);
+				case PacketRequest::SendID:
+				{
+					sendIDBackToServer(packetReceived);
+					break;
+				}
+				case PacketRequest::EntityListChange:
+				{
+					NewEntityPacket* receivedPacket = (NewEntityPacket*)(event.packet->data);
+				
+					// we do not need to initialize a new character if we already have that character (i.e. this client's character)
+					if (receivedPacket->clientID < m_serverCharacters.size())
+						break;
 
-				break;
-			}
-			case PacketRequest::EntityUpdate:
-			{
-				EntityUpdatePacket* receivedPacket = (EntityUpdatePacket*)(event.packet->data);
-				m_serverCharacters[receivedPacket->clientID].updateFromServer(receivedPacket);
+					m_serverCharacters.push_back(receivedPacket->newCharacter);
+					m_serverCharacters[m_serverCharacters.size() - 1].init();
 
-				break;
-			}
+					// this is just so that the renderer is actually rendering the updated character
+					if (receivedPacket->clientID == id)
+						character = &m_serverCharacters[id];
+
+					break;
+				}
+				case PacketRequest::EntityUpdate:
+				{
+					EntityUpdatePacket* receivedPacket = (EntityUpdatePacket*)(event.packet->data);
+					if (receivedPacket->clientID != id && receivedPacket->clientID < m_serverCharacters.size())
+						m_serverCharacters[receivedPacket->clientID].updateFromServer(receivedPacket);
+
+					break;
+				}
 			}
 
 			enet_packet_destroy(event.packet);

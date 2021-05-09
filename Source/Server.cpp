@@ -24,9 +24,6 @@ Server::~Server()
 std::mutex mutex;
 void Server::sendData()
 {
-	//mutex.lock();
-
-	//std::cout << "sending data from client: " << std::endl;
 	for (auto& client : m_clients)
 	{
 		static EntityUpdatePacket packet;
@@ -35,8 +32,6 @@ void Server::sendData()
 		packet.position = client->character->getPos();
 		packet.sendToAllPeers(m_serverHost, false);
 	}
-
-	//mutex.unlock();
 }
 
 void Server::sendIDToClient(ENetPeer* peer)
@@ -69,10 +64,18 @@ bool Server::clientInit()
 
 void Server::updateClientCharacterList()
 {
-	static NewEntityPacket packet;
-	packet.packetRequest = PacketRequest::EntityListChange;
-	packet.newCharacter = *(m_clients[m_clients.size() - 1]->character);
-	packet.sendToAllPeers(m_serverHost, true);
+	// we need to send this when a client connects.
+	for (auto& client : m_clients)
+	{
+		for (int id = 0; id < m_clients.size(); id++)
+		{
+			static NewEntityPacket packet;
+			packet.clientID = id;
+			packet.packetRequest = PacketRequest::EntityListChange;
+			packet.newCharacter = *(m_clients[id]->character);
+			packet.sendToAllPeers(m_serverHost, true);
+		}
+	}
 }
 
 void Server::updateEntity(Packet* packet)
@@ -90,6 +93,10 @@ void Server::updateEntity(Packet* packet)
 
 void Server::receiveData()
 {
+	// it does not work without this
+	// fucking lmao
+	std::cout << "cout\n";
+
 	// iterate through all the packets received by the server
 	ENetEvent event;
 	while (enet_host_service(m_serverHost, &event, 0) > 0)
@@ -118,7 +125,7 @@ void Server::receiveData()
 						std::cout << "Client failed to initialize\n";
 					break;
 				}
-				if (m_clients[packetReceived->clientID])
+				if (m_clients[packetReceived->clientID] >= 0)
 				{
 					switch (packetReceived->packetRequest)
 					{

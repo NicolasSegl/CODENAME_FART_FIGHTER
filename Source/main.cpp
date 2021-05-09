@@ -20,8 +20,8 @@
 // problems with lag when two exe's are launched, and not just one and the debugger
 // fiddle with mutexs
 
-// when making a server then launching the client exe, it works fine.
-// if both are launched at the same time, it does not work
+// make everything safe, check for failures
+// please jesus
 
 int main()
 {
