@@ -7,7 +7,7 @@ Client::Client()
 {
 	id = -1;
 	init();
-	m_clientHost = enet_host_create(nullptr, 1, 2, 0, 0);
+	m_clientHost = enet_host_create(nullptr, 1, 1, 0, 0);
 	if (m_clientHost == nullptr)
 		std::cout << "Error creating ENet client\n";
 }
@@ -46,7 +46,7 @@ void Client::sendIDBackToServer(Packet* packetReceived)
 	Packet packet;
 	packet.packetRequest = PacketRequest::AcknowledgeID;
 	packet.clientID = id;
-	packet.sendToPeer(m_peer, true);
+	packet.sendToPeer(m_peer, UDP::RELIABLE);
 	m_connected = true;
 }
 
@@ -57,43 +57,49 @@ void Client::receiveData()
 	{
 		switch (event.type)
 		{
-		case ENET_EVENT_TYPE_RECEIVE:
-			Packet* packetReceived = (Packet*)(event.packet->data);
-			switch (packetReceived->packetRequest)
+			case ENET_EVENT_TYPE_RECEIVE:
 			{
-				case PacketRequest::SendID:
+				Packet* packetReceived = (Packet*)(event.packet->data);
+				switch (packetReceived->packetRequest)
 				{
-					sendIDBackToServer(packetReceived);
-					break;
-				}
-				case PacketRequest::EntityListChange:
-				{
-					NewEntityPacket* receivedPacket = (NewEntityPacket*)(event.packet->data);
-				
-					// we do not need to initialize a new character if we already have that character (i.e. this client's character)
-					if (receivedPacket->clientID < m_serverCharacters.size())
+					case PacketRequest::SendID:
+					{
+						// give our client's character the same id
+						character->id = id;
+						sendIDBackToServer(packetReceived);
 						break;
+					}
+					case PacketRequest::EntityListChange:
+					{
+						NewEntityPacket* receivedPacket = (NewEntityPacket*)(event.packet->data);
 
-					m_serverCharacters.push_back(receivedPacket->newCharacter);
-					m_serverCharacters[m_serverCharacters.size() - 1].init();
+						// checking to see if we need to add a new character to this client's array (we shouldn't add any twice)
+						if (receivedPacket->clientID == id)
+							break;
+						for (auto& character : m_serverCharacters)
+							if (character.id == receivedPacket->clientID )
+								goto breakLabel;
 
-					// this is just so that the renderer is actually rendering the updated character
-					if (receivedPacket->clientID == id)
-						character = &m_serverCharacters[id];
+						m_serverCharacters.push_back(receivedPacket->newCharacter);
+						m_serverCharacters[m_serverCharacters.size() - 1].init();
 
-					break;
+						breakLabel:
+						break;
+					}
+					case PacketRequest::EntityUpdate:
+					{
+						EntityUpdatePacket* receivedPacket = (EntityUpdatePacket*)(event.packet->data);
+						if (receivedPacket->clientID != id && receivedPacket->clientID < m_serverCharacters.size())
+							m_serverCharacters[receivedPacket->clientID].updateFromServer(receivedPacket);
+
+						break;
+					}
+					default:
+						break;
 				}
-				case PacketRequest::EntityUpdate:
-				{
-					EntityUpdatePacket* receivedPacket = (EntityUpdatePacket*)(event.packet->data);
-					if (receivedPacket->clientID != id && receivedPacket->clientID < m_serverCharacters.size())
-						m_serverCharacters[receivedPacket->clientID].updateFromServer(receivedPacket);
 
-					break;
-				}
+				enet_packet_destroy(event.packet);
 			}
-
-			enet_packet_destroy(event.packet);
 		}
 	}
 }
@@ -104,7 +110,7 @@ void Client::updateEntity()
 	sendPacket.position = { (int)character->sprite.getPosition().x, (int)character->sprite.getPosition().y };
 	sendPacket.packetRequest = PacketRequest::EntityUpdate;
 	sendPacket.clientID = id;
-	sendPacket.sendToPeer(m_peer, false);
+	sendPacket.sendToPeer(m_peer, UDP::RELIABLE); // should this be reliable?
 }
 
 void Client::sendData()
@@ -123,14 +129,16 @@ bool Client::connectToIp(const std::string& ip)
 
 void Client::receiveIDFromServer()
 {
-	Packet packet;
-	m_peer = enet_host_connect(m_clientHost, &m_serverIPAddress, 2, 0);
+	m_peer = enet_host_connect(m_clientHost, &m_serverIPAddress, 1, 0);
+	if (m_peer == NULL)
+	{
+		std::cout << "No available peers for inititating an ENet connection\n";
+		exit(0);
+	}
+
 	ENetEvent event;
 	if (enet_host_service(m_clientHost, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT)
-	{
 		std::cout << "Connection successful\n";
-		enet_host_flush(m_clientHost);
-	}
 	else
 		std::cout << "connection unsucessful\n";
 }

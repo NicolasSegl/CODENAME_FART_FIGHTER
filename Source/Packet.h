@@ -13,6 +13,12 @@ enum class PacketRequest
 	EntityListChange,
 };
 
+enum class UDP
+{
+	RELIABLE,
+	UNRELIABLE,
+};
+
 struct Packet
 {
 	PacketRequest packetRequest;
@@ -20,8 +26,8 @@ struct Packet
 
 	Packet();
 
-	void sendToPeer(ENetPeer* peer, bool reliable);
-	void sendToAllPeers(ENetHost* host, bool reliable);
+	void sendToPeer(ENetPeer* peer, UDP reliability);
+	void sendToAllPeers(ENetHost* host, UDP reliability);
 
 	virtual int getSize() { return sizeof(*this); }
 };

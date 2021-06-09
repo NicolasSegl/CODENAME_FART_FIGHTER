@@ -24,13 +24,16 @@ Server::~Server()
 std::mutex mutex;
 void Server::sendData()
 {
+	//ENetPacket* packet = enet_packet_create("fart", strlen("fart") + 1, ENET_PACKET_FLAG_RELIABLE);
+	//enet_host_broadcast(m_serverHost, 0, packet);
+
 	for (auto& client : m_clients)
 	{
 		static EntityUpdatePacket packet;
 		packet.packetRequest = PacketRequest::EntityUpdate;
 		packet.clientID = client->id;
 		packet.position = client->character->getPos();
-		packet.sendToAllPeers(m_serverHost, false);
+		packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
 	}
 }
 
@@ -39,7 +42,7 @@ void Server::sendIDToClient(ENetPeer* peer)
 	static Packet packet;
 	packet.clientID = m_latestID;
 	packet.packetRequest = PacketRequest::SendID;
-	packet.sendToPeer(peer, true);
+	packet.sendToPeer(peer, UDP::RELIABLE);
 }
 
 bool Server::clientInit()
@@ -73,7 +76,7 @@ void Server::updateClientCharacterList()
 			packet.clientID = id;
 			packet.packetRequest = PacketRequest::EntityListChange;
 			packet.newCharacter = *(m_clients[id]->character);
-			packet.sendToAllPeers(m_serverHost, true);
+			packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
 		}
 	}
 }
@@ -93,10 +96,6 @@ void Server::updateEntity(Packet* packet)
 
 void Server::receiveData()
 {
-	// it does not work without this
-	// fucking lmao
-	std::cout << "cout\n";
-
 	// iterate through all the packets received by the server
 	ENetEvent event;
 	while (enet_host_service(m_serverHost, &event, 0) > 0)
@@ -123,7 +122,6 @@ void Server::receiveData()
 					}
 					else
 						std::cout << "Client failed to initialize\n";
-					break;
 				}
 				if (m_clients[packetReceived->clientID] >= 0)
 				{
@@ -147,6 +145,7 @@ void Server::receiveData()
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
 			{
+				std::cout << "client has disconnected\n";
 				break;
 			}
 		}
@@ -182,6 +181,7 @@ void Server::update()
 {
 	mutex.lock();
 	receiveData();
+	// comment sendData out if there are problems XDDDDD
 	sendData();
 	mutex.unlock();
 }

@@ -16,6 +16,7 @@ private:
 
 public:
 	sf::RectangleShape sprite;
+	int id;
 
 	Character();
 	Character(const Character& copyCharacter);

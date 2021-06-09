@@ -10,18 +10,19 @@
 // maybe make a function and pass a parameter an enum that will tell what data to send/receive?
 // change client init to see if the ip is already in
 
-// send characters to clients. then simply update them (their position, namely)
 // make more packets static. this may be faster?
 // make separate folders for different Packet types (packet classes)
 // make it so that, when a client disconnects, the server will remove the character from Client::serverCharacters
 // the couts may be what is causing the lag on the server end. use mutexs to remedy this
 // properly disconnect when the window closes
 // make separate functions for every packet sent/received
-// problems with lag when two exe's are launched, and not just one and the debugger
 // fiddle with mutexs
 
 // make everything safe, check for failures
-// please jesus
+// when the client accepts a new character from the server, make sure that it doesn't already exist in the characterList
+// make it so that the server can connect to itself with a client of its own
+// clean more shit up. in the packet class, make an actual destructor
+// currently sending all packets as reliable! this may be slower, men adk
 
 int main()
 {
