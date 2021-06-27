@@ -17,15 +17,17 @@ private:
 public:
 	sf::RectangleShape sprite;
 	int id;
+	bool isAlive;
 
-	Character();
+	Character(int id = -1);
 	Character(const Character& copyCharacter);
+	Character& operator=(const Character& assignedCharacter);
 
 	vec2i getPos() { return m_pos; }
 	void setPos(vec2i newPos) { m_pos = newPos; }
 
 	void updateFromServer(EntityUpdatePacket* packet);
 
-	void init();
+	void init(int newId = -1);
 	void update();
 };

@@ -15,29 +15,33 @@ App::App()
 	m_renderer.init(&m_window);
 }
 
+void App::close()
+{
+	// when the window is closed, ensure that the client/server shutdown properly
+	m_client.disconnect();
+	if (m_server.isHosting)
+		m_server.shutdown();
+	// also close the window and simply exit the program here
+	m_window.close();
+	exit(0);
+}
+
 void App::handleEvents()
 {
 	sf::Event event;
 	while (m_window.pollEvent(event))
-	{
 		if (event.type == sf::Event::Closed)
-		{
-			// when the window is closed, ensure that the client/server shutdown properly
-			m_client.disconnect();
-			m_server.shutdown();
-
-			m_window.close();
-			m_running = false;
-		}
-	}
+			close();
 }
 
-void App::run()
+// ask the user if this will be a server of client, then setup accordingly
+void App::setup()
 {
 	std::cout << "s for server, c for client: ";
 	char input;
 	std::cin >> input;
 	std::cin.ignore();
+
 	if (input == 'c')
 	{
 		std::cout << "enter the server ip address: ";
@@ -53,19 +57,23 @@ void App::run()
 		std::getline(std::cin, ip);
 		m_server.start(ip);
 	}
+}
 
+void App::run()
+{
+	setup();
 	// hit it twice
 	while (m_running)
 	{
 		handleEvents();
 		m_renderer.clearWindow();
 
-		if (input == 's')
+		if (m_server.isHosting)
 		{
 	//		m_server.update();
 			m_server.renderClients(m_window);
 		}
-		else if (input == 'c')
+		else
 		{
 			m_client.update();
 			m_renderer.renderClients(m_client);

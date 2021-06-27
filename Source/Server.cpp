@@ -11,22 +11,31 @@ Server::Server()
 
 void Server::shutdown()
 {
+	std::cout << "Server shutting down\n";
 	if (isHosting)
+	{
+		isHosting = false;
 		m_hostThread.join();
+	}
+
+	Packet packet;
+	packet.packetRequest = PacketRequest::ServerShutdown;
+	packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
+
+	// this actually sends the packet, as we will not be serving the host again
+	enet_host_flush(m_serverHost);
 }
 
 Server::~Server()
 {
-	shutdown();
+	if (isHosting)
+		shutdown();
 	enet_host_destroy(m_serverHost);
 }
 
 std::mutex mutex;
 void Server::sendData()
 {
-	//ENetPacket* packet = enet_packet_create("fart", strlen("fart") + 1, ENET_PACKET_FLAG_RELIABLE);
-	//enet_host_broadcast(m_serverHost, 0, packet);
-
 	for (auto& client : m_clients)
 	{
 		static EntityUpdatePacket packet;
@@ -58,8 +67,8 @@ bool Server::clientInit()
 
 	// create a new client and initialize it with default values
 	m_clients.push_back(new Client);
-	m_clients[m_clients.size() - 1]->serverCreationInit();
 	m_clients[m_clients.size() - 1]->id = m_latestID;
+	m_clients[m_clients.size() - 1]->serverCreationInit();
 	m_latestID++;
 
 	return true;
@@ -68,16 +77,14 @@ bool Server::clientInit()
 void Server::updateClientCharacterList()
 {
 	// we need to send this when a client connects.
-	for (auto& client : m_clients)
+	for (int id = 0; id < m_clients.size(); id++)
 	{
-		for (int id = 0; id < m_clients.size(); id++)
-		{
-			static NewEntityPacket packet;
-			packet.clientID = id;
-			packet.packetRequest = PacketRequest::EntityListChange;
-			packet.newCharacter = *(m_clients[id]->character);
-			packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
-		}
+		static NewEntityPacket packet;
+		packet.clientID = id;
+		packet.packetRequest = PacketRequest::EntityListChange;
+		packet.newCharacter = *(m_clients[id]->character);
+		packet.newCharacter.id = m_clients[id]->character->id;
+		packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
 	}
 }
 
@@ -92,6 +99,15 @@ void Server::updateEntity(Packet* packet)
 		packetReceived->position.x,
 		packetReceived->position.y
 	));
+}
+
+void Server::clientDisconnect(Packet* packet)
+{
+	m_clients.erase(m_clients.begin() + packet->clientID);
+	std::cout << "Client " << packet->clientID << " has disconnected\n";
+
+	// send the client disconnect packet to other clients as well, so they can handle the disconnection of a client
+	packet->sendToAllPeers(m_serverHost, UDP::RELIABLE);
 }
 
 void Server::receiveData()
@@ -152,13 +168,6 @@ void Server::receiveData()
 	}
 }
 
-void Server::clientDisconnect(Packet* packet)
-{
-	std::cout << "Client " << packet->clientID << "has disconnected\n";
-	delete m_clients[packet->clientID];
-	m_clients[packet->clientID] = nullptr;
-}
-
 void Server::start(std::string ip)
 {
 	enet_address_set_host(&m_serverIPAddress, ip.c_str());
@@ -166,14 +175,18 @@ void Server::start(std::string ip)
 	m_serverIPAddress.host = ENET_HOST_ANY;
 	m_serverHost = enet_host_create(&m_serverIPAddress, PLAYER_CAP, 2, 0, 0);
 	if (m_serverHost == nullptr)
+	{
 		std::cout << "Error creating ENet server host\n";
+		return;
+	}
+	isHosting = true;
 	// create a thread that will send/receive data for the server.
 	m_hostThread = std::thread(&Server::handleClients, this);
 }
 
 void Server::handleClients()
 {
-	while (true)
+	while (isHosting)
 		update();
 }
 
@@ -189,10 +202,6 @@ void Server::update()
 void Server::renderClients(sf::RenderWindow& window)
 {
 	for (auto& client : m_clients)
-	{
 		if (client)
-		{
 			window.draw(client->character->sprite);
-		}
-	}
 }

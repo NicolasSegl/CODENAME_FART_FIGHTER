@@ -2,8 +2,6 @@
 #include <iostream>
 #include <enet/enet.h>
 
-// make resizable
-// make separate exe for server?
 // maybe just a thread for every client for the server? so 5 clients connected to a server would result in the server using 5 threads to send the data
 // ctrl-f new, then clean up memory leaks
 
@@ -15,14 +13,17 @@
 // make it so that, when a client disconnects, the server will remove the character from Client::serverCharacters
 // the couts may be what is causing the lag on the server end. use mutexs to remedy this
 // properly disconnect when the window closes
-// make separate functions for every packet sent/received
 // fiddle with mutexs
 
 // make everything safe, check for failures
 // when the client accepts a new character from the server, make sure that it doesn't already exist in the characterList
 // make it so that the server can connect to itself with a client of its own
 // clean more shit up. in the packet class, make an actual destructor
-// currently sending all packets as reliable! this may be slower, men adk
+// currently sending all packets as reliable. this may be slower, men adk
+
+// BECOME COMMENT MAN. FUNCTIONS HAVE DESCRIPTIONS ABOVE THEM, THEIR PURPOSE. AAAAAAAAAAAAAAAA
+// RECEIVE PACKETS ON CLIENT ON ANOTHER THREAD
+// properly shut down client and server
 
 int main()
 {
@@ -36,6 +37,8 @@ int main()
 
 	App app;
 	app.run();
+
+	int x = 0;
 
 	return 0;
 }

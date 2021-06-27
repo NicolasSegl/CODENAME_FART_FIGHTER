@@ -12,18 +12,20 @@ private:
 	ENetPeer* m_peer;
 	ENetHost* m_clientHost;
 	std::vector<Character> m_serverCharacters;
-	bool m_connected = false;
 
 	virtual void sendData();
 	virtual void receiveData();
 
-	void receiveIDFromServer();
-	void sendIDBackToServer(Packet* packetReceived);
+	void receiveID();
+	void receiveNewEntity(NewEntityPacket* packetReceived);
+
+	void sendID(Packet* packetReceived);
 	void updateEntity();
 
 public:
 	int id;
 	Character* character;
+	bool connected = false;
 
 	Client();
 	~Client();

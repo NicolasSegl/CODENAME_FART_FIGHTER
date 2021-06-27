@@ -18,6 +18,8 @@ private:
 	Server m_server;
 
 	void handleEvents();
+	void close();
+	void setup();
 
 public:
 	App();

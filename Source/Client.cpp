@@ -14,30 +14,39 @@ Client::Client()
 
 void Client::disconnect()
 {
+	std::cout << "Disconnecting from server\n";
+
 	Packet packet;
 	packet.packetRequest = PacketRequest::ClientDisconnect;
-	//packet.sendToPeer(m_peer);
+	packet.clientID = id;
+	packet.sendToPeer(m_peer, UDP::RELIABLE);
+
+	// send the final packets
+	enet_host_flush(m_clientHost);
+	connected = false;
 }
 
 Client::~Client()
 {
-	disconnect();
+	if (connected)
+		disconnect();
 	enet_host_destroy(m_clientHost);
 	enet_peer_reset(m_peer);
+	delete character;
 }
 
 void Client::init()
 {
 	character = new Character;
-	character->init();
+	character->init(id);
 }
 
 void Client::serverCreationInit()
 {
-	character->init();
+	character->init(id);
 }
 
-void Client::sendIDBackToServer(Packet* packetReceived)
+void Client::sendID(Packet* packetReceived)
 {
 	// this tells the server what the id of the client sending packets is, 
 	id = packetReceived->clientID;
@@ -46,8 +55,35 @@ void Client::sendIDBackToServer(Packet* packetReceived)
 	Packet packet;
 	packet.packetRequest = PacketRequest::AcknowledgeID;
 	packet.clientID = id;
-	packet.sendToPeer(m_peer, UDP::RELIABLE);
-	m_connected = true;
+	packet.sendToPeer(m_peer, UDP::RELIABLE);;
+	connected = true;
+}
+
+void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
+{
+	// checking to see if we need to add a new character to this client's array (we shouldn't add any twice, nor add ourselves)
+	for (auto& character : m_serverCharacters)
+		if (character.id == receivedPacket->clientID)
+			return;
+
+	// afterwards so there is no out of bounds error
+	if (id == receivedPacket->clientID)
+	{
+		// initiate the character in the server character list
+		m_serverCharacters.push_back(*character);
+		if (character)
+			delete character;
+		character = &m_serverCharacters[id];
+		return;
+	}
+
+	m_serverCharacters.push_back(receivedPacket->newCharacter);
+	m_serverCharacters[m_serverCharacters.size() - 1].init();
+
+	// due to the memory allocation when an std::vector calls ::push_back(), this is necessary
+	// otherwise, it will be pointing to some random point in memory (of which std::vector has deleted)
+	if (m_serverCharacters.size() > id)
+		character = &m_serverCharacters[id];
 }
 
 void Client::receiveData()
@@ -64,26 +100,14 @@ void Client::receiveData()
 				{
 					case PacketRequest::SendID:
 					{
-						// give our client's character the same id
+						// give our client's character the same id as our client
+						sendID(packetReceived);
 						character->id = id;
-						sendIDBackToServer(packetReceived);
 						break;
 					}
 					case PacketRequest::EntityListChange:
 					{
-						NewEntityPacket* receivedPacket = (NewEntityPacket*)(event.packet->data);
-
-						// checking to see if we need to add a new character to this client's array (we shouldn't add any twice)
-						if (receivedPacket->clientID == id)
-							break;
-						for (auto& character : m_serverCharacters)
-							if (character.id == receivedPacket->clientID )
-								goto breakLabel;
-
-						m_serverCharacters.push_back(receivedPacket->newCharacter);
-						m_serverCharacters[m_serverCharacters.size() - 1].init();
-
-						breakLabel:
+						receiveNewEntity((NewEntityPacket*)(event.packet->data));
 						break;
 					}
 					case PacketRequest::EntityUpdate:
@@ -92,6 +116,19 @@ void Client::receiveData()
 						if (receivedPacket->clientID != id && receivedPacket->clientID < m_serverCharacters.size())
 							m_serverCharacters[receivedPacket->clientID].updateFromServer(receivedPacket);
 
+						break;
+					}
+					case PacketRequest::ServerShutdown:
+					{
+						std::cout << "The server has shutdown\n";
+						// disconnect ?
+						break;
+					}
+					case PacketRequest::ClientDisconnect:
+					{
+						std::cout << "A client has disconnected\n";
+						// This will render the character dead, and make it as though the character isn't there at all.
+						m_serverCharacters[packetReceived->clientID].isAlive = false;
 						break;
 					}
 					default:
@@ -110,7 +147,7 @@ void Client::updateEntity()
 	sendPacket.position = { (int)character->sprite.getPosition().x, (int)character->sprite.getPosition().y };
 	sendPacket.packetRequest = PacketRequest::EntityUpdate;
 	sendPacket.clientID = id;
-	sendPacket.sendToPeer(m_peer, UDP::RELIABLE); // should this be reliable?
+	sendPacket.sendToPeer(m_peer, UDP::RELIABLE);
 }
 
 void Client::sendData()
@@ -123,11 +160,11 @@ bool Client::connectToIp(const std::string& ip)
 	// tell it to wait for a response. 
 	enet_address_set_host(&m_serverIPAddress, ip.c_str());
 	m_serverIPAddress.port = m_port;
-	receiveIDFromServer();
+	receiveID();
 	return true;
 }
 
-void Client::receiveIDFromServer()
+void Client::receiveID()
 {
 	m_peer = enet_host_connect(m_clientHost, &m_serverIPAddress, 1, 0);
 	if (m_peer == NULL)
@@ -146,7 +183,7 @@ void Client::receiveIDFromServer()
 void Client::update()
 {
 	receiveData();
-	if (m_connected)
+	if (connected)
 		sendData();
 	character->update();
 }

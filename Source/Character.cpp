@@ -6,13 +6,15 @@
 const int MAX_CHARACTER_HORIZONTAL_VELOCITY = 7;
 const float GRAVITY = 0.5;
 
-Character::Character()
+Character::Character(int setID)
 {
-	init();
+	isAlive = true;
+	init(setID);
 }
 
-void Character::init()
+void Character::init(int newid)
 {
+	id = newid;
 	sprite.setSize(sf::Vector2f(50, 100));
 	sprite.setFillColor(sf::Color::Black);
 	m_pos = { 500, 500 };
@@ -71,9 +73,14 @@ void Character::updateKinematicStates()
 	sprite.setPosition(m_pos.x, m_pos.y);
 }
 
+void Character::updateFromServer(EntityUpdatePacket* packet)
+{
+	m_pos = packet->position;
+	sprite.setPosition(m_pos.x, m_pos.y);
+}
+
 // note that this copy instructor is crucial for sending the initial characters to the clients
 // when the server starts. without it, reading violations are thrown when trying to copy
-
 Character::Character(const Character& copyCharacter)
 {
 	m_pos = copyCharacter.m_pos;
@@ -82,10 +89,23 @@ Character::Character(const Character& copyCharacter)
 	sprite.setPosition(copyCharacter.sprite.getPosition());
 	sprite.setSize(copyCharacter.sprite.getSize());
 	sprite.setFillColor(copyCharacter.sprite.getFillColor());
+
+	id = copyCharacter.id;
 }
 
-void Character::updateFromServer(EntityUpdatePacket* packet)
+// this is used mainly for sending the character list to clients when a new client connects
+Character& Character::operator=(const Character& assignedCharacter)
 {
-	m_pos = packet->position;
-	sprite.setPosition(m_pos.x, m_pos.y);
+	if (this == &assignedCharacter)
+		return *this;
+	
+	m_pos = assignedCharacter.m_pos;
+	// for some reason, SFML does not like copying one sprite into another
+	// and so i am manually doing the parts we need
+	sprite.setPosition(assignedCharacter.sprite.getPosition());
+	sprite.setSize(assignedCharacter.sprite.getSize());
+	sprite.setFillColor(assignedCharacter.sprite.getFillColor());
+	id = assignedCharacter.id;
+
+	return *this;
 }

@@ -11,6 +11,7 @@ enum class PacketRequest
 	EntityUpdate,
 	ClientDisconnect,
 	EntityListChange,
+	ServerShutdown,
 };
 
 enum class UDP

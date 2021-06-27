@@ -2,7 +2,6 @@
 
 Renderer::Renderer()
 {
-
 }
 
 void Renderer::init(sf::RenderWindow* window)
@@ -15,9 +14,9 @@ void Renderer::init(sf::RenderWindow* window)
 
 void Renderer::renderClients(Client& client)
 {
-	m_window->draw(client.character->sprite);
 	for (auto& character : client.getServerCharacters())
-		m_window->draw(character.sprite);
+		if (character.isAlive)
+			m_window->draw(character.sprite);
 }
 
 void Renderer::updateWindow()
