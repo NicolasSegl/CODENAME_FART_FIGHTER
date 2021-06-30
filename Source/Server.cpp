@@ -183,7 +183,7 @@ void Server::receiveData()
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
 			{
-				std::cout << "client has disconnected\n";
+				std::cout << "Client has disconnected\n";
 				break;
 			}
 		}

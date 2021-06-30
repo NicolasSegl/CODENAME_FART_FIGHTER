@@ -70,7 +70,6 @@ void Character::handlePlatformCollision(std::vector<sf::RectangleShape>& platfor
 
 	// iterate through all of the level's platforms and check for collision
 	// DO NOTHING IF IT HITS THE CORNER
-	// 
 
 	for (auto& platform : platforms)
 	{
@@ -82,7 +81,7 @@ void Character::handlePlatformCollision(std::vector<sf::RectangleShape>& platfor
 		// check to see if the character is on the top or bottom of the platform
 		if (characterLeft < platformRight - 5 && characterRight > platformLeft + 5)
 		{
-			if (characterBottom >= platformTop && characterBottom <= platformBottom && m_vel.y > 0)
+			if (characterBottom >= platformTop && characterBottom <= platformTop + 25 && m_vel.y > 0)
 			{
 				m_pos.y = platformTop - sprite.getSize().y;
 				m_onSurface = true;
@@ -91,7 +90,7 @@ void Character::handlePlatformCollision(std::vector<sf::RectangleShape>& platfor
 				characterTop = m_pos.y;
 				characterBottom = m_pos.y + sprite.getSize().y;
 			}
-			else if (characterTop <= platformBottom && characterTop >= platformTop && m_vel.y < 0)
+			else if (characterTop <= platformBottom && characterTop >= platformBottom - 25 && m_vel.y < 0)
 			{
 				m_pos.y = platformBottom;
 				m_vel.y = 0;
