@@ -28,3 +28,9 @@ void Renderer::clearWindow(sf::Color colour)
 {
 	m_window->clear(colour);
 }
+
+void Renderer::renderLevel(Level* level)
+{
+	for (auto& platform : level->getPlatforms())
+		m_window->draw(platform);
+}

@@ -3,6 +3,7 @@
 
 #include "Client.h"
 #include "Server.h"
+#include "Level.h"
 
 #include <iostream>
 #include <string>
@@ -18,9 +19,12 @@ App::App()
 void App::close()
 {
 	// when the window is closed, ensure that the client/server shutdown properly
-	m_client.disconnect();
+
+	if (m_client.connected)
+		m_client.disconnect();
 	if (m_server.isHosting)
 		m_server.shutdown();
+
 	// also close the window and simply exit the program here
 	m_window.close();
 	exit(0);
@@ -62,7 +66,7 @@ void App::setup()
 void App::run()
 {
 	setup();
-	// hit it twice
+	
 	while (m_running)
 	{
 		handleEvents();
@@ -72,15 +76,15 @@ void App::run()
 		{
 	//		m_server.update();
 			m_server.renderClients(m_window);
+			m_renderer.renderLevel(m_server.getLevel());
 		}
 		else
 		{
 			m_client.update();
 			m_renderer.renderClients(m_client);
+			m_renderer.renderLevel(m_client.getLevel());
 		}
 
 		m_renderer.updateWindow();
 	}
-
-	// should close the other threads from server/client
 }

@@ -121,6 +121,7 @@ void Client::receiveData()
 					case PacketRequest::ServerShutdown:
 					{
 						std::cout << "The server has shutdown\n";
+						m_serverCharacters.clear();
 						// disconnect ?
 						break;
 					}
@@ -129,6 +130,12 @@ void Client::receiveData()
 						std::cout << "A client has disconnected\n";
 						// This will render the character dead, and make it as though the character isn't there at all.
 						m_serverCharacters[packetReceived->clientID].isAlive = false;
+						break;
+					}
+					case PacketRequest::LoadLevel:
+					{
+						LevelPacket* levelPacket = (LevelPacket*)(event.packet->data);
+						m_level->loadLevel(levelPacket->levelName);
 						break;
 					}
 					default:
@@ -184,6 +191,8 @@ void Client::update()
 {
 	receiveData();
 	if (connected)
+	{
 		sendData();
-	character->update();
+		character->update(m_level->getPlatforms());
+	}
 }

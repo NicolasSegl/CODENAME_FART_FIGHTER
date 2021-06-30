@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Client.h"
+#include "level.h"
+
 #include <SFML/Graphics.hpp>
 #include <thread>
 #include <vector>
@@ -25,6 +27,7 @@ private:
 	void updateClientCharacterList();
 	void updateEntity(Packet* packet);
 	void clientDisconnect(Packet* packet);
+	void receiveAcknowledgement(Packet* packet, ENetPeer* peer);
 
 public:
 	Server();

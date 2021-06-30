@@ -7,6 +7,9 @@ Server::Server()
 	: NetworkBase()
 {
 	isHosting = false;
+
+	// setup the level (TEST ONLY FOR NOW)
+	m_level->loadLevel("test.txt");
 }
 
 void Server::shutdown()
@@ -31,6 +34,7 @@ Server::~Server()
 	if (isHosting)
 		shutdown();
 	enet_host_destroy(m_serverHost);
+	delete m_level;
 }
 
 std::mutex mutex;
@@ -110,6 +114,29 @@ void Server::clientDisconnect(Packet* packet)
 	packet->sendToAllPeers(m_serverHost, UDP::RELIABLE);
 }
 
+void Server::receiveAcknowledgement(Packet* packet, ENetPeer* peer)
+{
+	if (clientInit())
+	{
+		std::cout << "Client " << packet->clientID << " successfully initialized\n";
+		updateClientCharacterList();
+
+		LevelPacket levelPacket;
+		levelPacket.packetRequest = PacketRequest::LoadLevel;
+
+		//this is scuffed lmao
+		for (int character = 0; character < m_level->levelName.size(); character++)
+			levelPacket.levelName[character] = m_level->levelName[character];
+
+		// make the final character a terminating 0
+		levelPacket.levelName[m_level->levelName.size()] = '\0';
+
+		levelPacket.sendToPeer(peer, UDP::RELIABLE);
+	}
+	else
+		std::cout << "Client failed to initialize\n";
+}
+
 void Server::receiveData()
 {
 	// iterate through all the packets received by the server
@@ -131,13 +158,8 @@ void Server::receiveData()
 
 				if (packetReceived->packetRequest == PacketRequest::AcknowledgeID)
 				{
-					if (clientInit())
-					{
-						std::cout << "Client " << packetReceived->clientID << " successfully initialized\n";
-						updateClientCharacterList();
-					}
-					else
-						std::cout << "Client failed to initialize\n";
+					receiveAcknowledgement(packetReceived, event.peer);
+					break;
 				}
 				if (m_clients[packetReceived->clientID] >= 0)
 				{

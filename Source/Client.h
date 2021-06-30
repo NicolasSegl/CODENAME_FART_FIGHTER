@@ -2,6 +2,8 @@
 
 #include "Character.h"
 #include "NetworkBase.h"
+#include "Level.h"
+
 #include <string>
 #include <vector>
 

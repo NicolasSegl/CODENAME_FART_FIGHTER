@@ -23,17 +23,17 @@ void Character::init(int newid)
 	m_onSurface = false;
 }
 
-void Character::update()
+void Character::update(std::vector<sf::RectangleShape>& platforms)
 {
-	updateKinematicStates();
+	updateKinematicStates(platforms);
 }
 
-void Character::updateKinematicStates()
+void Character::handleUserInput()
 {
 	// adjust the velocity of the character
-	bool moveLeft  = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
+	bool moveLeft = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
 	bool moveRight = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-	bool isJumping = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
+	m_isJumping = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
 
 	if (!moveLeft && !moveRight)
 	{
@@ -49,23 +49,93 @@ void Character::updateKinematicStates()
 		if (moveRight && m_vel.x < MAX_CHARACTER_HORIZONTAL_VELOCITY)
 			m_vel.x += 0.5;
 	}
+}
+
+// this also handles gravity and the player falling because ofi t
+void Character::handlePlatformCollision(std::vector<sf::RectangleShape>& platforms)
+{
+	m_onSurface = false;
 
 	// 768 = window height. 100 = character_height
-	if (m_pos.y + 100 >= 768)
+	if (m_pos.y + sprite.getSize().y >= 768)
 	{
 		m_pos.y = 768 - 100;
 		m_onSurface = true;
 	}
-	else
-		m_onSurface = false;
+
+	int characterLeft = m_pos.x;
+	int characterRight = m_pos.x + sprite.getSize().x;
+	int characterTop = m_pos.y;
+	int characterBottom = m_pos.y + sprite.getSize().y;
+
+	// iterate through all of the level's platforms and check for collision
+	// DO NOTHING IF IT HITS THE CORNER
+	// 
+
+	for (auto& platform : platforms)
+	{
+		int platformLeft   = platform.getPosition().x;
+		int platformRight  = platform.getPosition().x + platform.getSize().x;
+		int platformTop    = platform.getPosition().y;
+		int platformBottom = platform.getPosition().y + platform.getSize().y;
+
+		// check to see if the character is on the top or bottom of the platform
+		if (characterLeft < platformRight - 5 && characterRight > platformLeft + 5)
+		{
+			if (characterBottom >= platformTop && characterBottom <= platformBottom && m_vel.y > 0)
+			{
+				m_pos.y = platformTop - sprite.getSize().y;
+				m_onSurface = true;
+
+				// update the character collision variables after chaning our m_pos
+				characterTop = m_pos.y;
+				characterBottom = m_pos.y + sprite.getSize().y;
+			}
+			else if (characterTop <= platformBottom && characterTop >= platformTop && m_vel.y < 0)
+			{
+				m_pos.y = platformBottom;
+				m_vel.y = 0;
+				characterTop = m_pos.y;
+				characterBottom = m_pos.y + sprite.getSize().y;
+			}
+		}
+
+		// check to see if the character is colliding with the sides of the platform
+		// if so, then ensure that the player cannot move in that direction
+		if (characterTop < platformBottom - 5 && characterBottom > platformTop + 5)
+		{
+			// colliding with right side?
+			if (characterLeft <= platformRight && characterRight >= platformRight && m_vel.x < 0)
+			{
+				m_pos.x = platformRight;
+				m_vel.x = 0;
+			}
+			// colliding with left side?
+			else if (characterRight >= platformLeft && characterLeft <= platformLeft && m_vel.x > 0)
+			{
+				m_pos.x = platformLeft - sprite.getSize().x;
+				m_vel.x = 0;
+			}
+
+			// update the character collision variables after chaning our m_pos
+			characterLeft = m_pos.x;
+			characterRight = m_pos.x + sprite.getSize().x;
+		}
+	}
 
 	if (!m_onSurface)
 		m_vel.y += GRAVITY;
 	else
 		m_vel.y = 0;
 
-	if (m_onSurface && isJumping)
-		m_vel.y = -10;
+	if (m_onSurface && m_isJumping)
+		m_vel.y = -15;
+}
+
+void Character::updateKinematicStates(std::vector<sf::RectangleShape>& platforms)
+{
+	handleUserInput();
+	handlePlatformCollision(platforms);
 
 	// update the position of the character
 	m_pos.x += m_vel.x;

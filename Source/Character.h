@@ -1,7 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+
 #include "utils.h"
+#include "Level.h"
 
 class EntityUpdatePacket;
 
@@ -11,8 +13,11 @@ private:
 	vec2f m_vel;
 	vec2i m_pos;
 	bool m_onSurface;
+	bool m_isJumping;
 
-	void updateKinematicStates();
+	void updateKinematicStates(std::vector<sf::RectangleShape>& platforms);
+	void handleUserInput();
+	void handlePlatformCollision(std::vector<sf::RectangleShape>& platforms);
 
 public:
 	sf::RectangleShape sprite;
@@ -29,5 +34,5 @@ public:
 	void updateFromServer(EntityUpdatePacket* packet);
 
 	void init(int newId = -1);
-	void update();
+	void update(std::vector<sf::RectangleShape>& platforms);
 };

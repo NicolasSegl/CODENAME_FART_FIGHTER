@@ -12,6 +12,7 @@ enum class PacketRequest
 	ClientDisconnect,
 	EntityListChange,
 	ServerShutdown,
+	LoadLevel,
 };
 
 enum class UDP
@@ -42,5 +43,11 @@ struct EntityUpdatePacket : public Packet
 struct NewEntityPacket : public Packet
 {
 	Character newCharacter;
+	int getSize() { return sizeof(*this); }
+};
+
+struct LevelPacket : public Packet
+{
+	char levelName[64];
 	int getSize() { return sizeof(*this); }
 };
