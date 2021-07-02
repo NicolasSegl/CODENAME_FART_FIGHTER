@@ -152,14 +152,7 @@ void Character::updateFromServer(EntityUpdatePacket* packet)
 // when the server starts. without it, reading violations are thrown when trying to copy
 Character::Character(const Character& copyCharacter)
 {
-	m_pos = copyCharacter.m_pos;
-	// for some reason, SFML does not like copying one sprite into another
-	// and so i am manually doing the parts we need
-	sprite.setPosition(copyCharacter.sprite.getPosition());
-	sprite.setSize(copyCharacter.sprite.getSize());
-	sprite.setFillColor(copyCharacter.sprite.getFillColor());
-
-	id = copyCharacter.id;
+	*this = copyCharacter;
 }
 
 // this is used mainly for sending the character list to clients when a new client connects
@@ -169,12 +162,15 @@ Character& Character::operator=(const Character& assignedCharacter)
 		return *this;
 	
 	m_pos = assignedCharacter.m_pos;
+	id = assignedCharacter.id;
+	isAlive = assignedCharacter.isAlive;
+	connected = assignedCharacter.connected;
+
 	// for some reason, SFML does not like copying one sprite into another
 	// and so i am manually doing the parts we need
 	sprite.setPosition(assignedCharacter.sprite.getPosition());
 	sprite.setSize(assignedCharacter.sprite.getSize());
 	sprite.setFillColor(assignedCharacter.sprite.getFillColor());
-	id = assignedCharacter.id;
 
 	return *this;
 }

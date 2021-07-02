@@ -23,6 +23,7 @@ public:
 	sf::RectangleShape sprite;
 	int id;
 	bool isAlive;
+	bool connected = true;
 
 	Character(int id = -1);
 	Character(const Character& copyCharacter);

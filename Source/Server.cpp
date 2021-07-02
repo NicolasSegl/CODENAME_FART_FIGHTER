@@ -42,6 +42,9 @@ void Server::sendData()
 {
 	for (auto& client : m_clients)
 	{
+		if (!client->connected)
+			continue;
+
 		static EntityUpdatePacket packet;
 		packet.packetRequest = PacketRequest::EntityUpdate;
 		packet.clientID = client->id;
@@ -73,6 +76,7 @@ bool Server::clientInit()
 	m_clients.push_back(new Client);
 	m_clients[m_clients.size() - 1]->id = m_latestID;
 	m_clients[m_clients.size() - 1]->serverCreationInit();
+	m_clients[m_clients.size() - 1]->connected = true;
 	m_latestID++;
 
 	return true;
@@ -86,8 +90,15 @@ void Server::updateClientCharacterList()
 		static NewEntityPacket packet;
 		packet.clientID = id;
 		packet.packetRequest = PacketRequest::EntityListChange;
-		packet.newCharacter = *(m_clients[id]->character);
-		packet.newCharacter.id = m_clients[id]->character->id;
+
+		if (!m_clients[id]->connected)
+			packet.connected = false;
+		else
+		{
+			packet.newCharacter = *(m_clients[id]->character);
+			packet.newCharacter.id = m_clients[id]->character->id;
+		}
+
 		packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
 	}
 }
@@ -107,7 +118,7 @@ void Server::updateEntity(Packet* packet)
 
 void Server::clientDisconnect(Packet* packet)
 {
-	m_clients.erase(m_clients.begin() + packet->clientID);
+	m_clients[packet->clientID]->connected = false;
 	std::cout << "Client " << packet->clientID << " has disconnected\n";
 
 	// send the client disconnect packet to other clients as well, so they can handle the disconnection of a client
@@ -183,7 +194,7 @@ void Server::receiveData()
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
 			{
-				std::cout << "Client has disconnected\n";
+				//std::cout << "Client has disconnected\n";
 				break;
 			}
 		}
@@ -224,6 +235,6 @@ void Server::update()
 void Server::renderClients(sf::RenderWindow& window)
 {
 	for (auto& client : m_clients)
-		if (client)
+		if (client->connected)
 			window.draw(client->character->sprite);
 }

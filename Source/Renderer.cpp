@@ -15,7 +15,7 @@ void Renderer::init(sf::RenderWindow* window)
 void Renderer::renderClients(Client& client)
 {
 	for (auto& character : client.getServerCharacters())
-		if (character.isAlive)
+		if (character.isAlive && character.connected)
 			m_window->draw(character.sprite);
 }
 

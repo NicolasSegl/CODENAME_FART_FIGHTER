@@ -43,6 +43,7 @@ struct EntityUpdatePacket : public Packet
 struct NewEntityPacket : public Packet
 {
 	Character newCharacter;
+	bool connected = true;
 	int getSize() { return sizeof(*this); }
 };
 

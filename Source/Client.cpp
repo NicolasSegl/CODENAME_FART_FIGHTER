@@ -80,6 +80,9 @@ void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
 	m_serverCharacters.push_back(receivedPacket->newCharacter);
 	m_serverCharacters[m_serverCharacters.size() - 1].init();
 
+	if (!receivedPacket->connected)
+		m_serverCharacters[m_serverCharacters.size() - 1].connected = false;
+
 	// due to the memory allocation when an std::vector calls ::push_back(), this is necessary
 	// otherwise, it will be pointing to some random point in memory (of which std::vector has deleted)
 	if (m_serverCharacters.size() > id)
