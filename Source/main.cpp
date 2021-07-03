@@ -15,7 +15,6 @@
 
 // BECOME COMMENT MAN. FUNCTIONS HAVE DESCRIPTIONS ABOVE THEM, THEIR PURPOSE. AAAAAAAAAAAAAAAA
 // RECEIVE PACKETS ON CLIENT ON ANOTHER THREAD
-// make the server send the level to the client
 // beef rod hitboxes
 // make release work
 // put levels folder in release folder as well
@@ -25,6 +24,7 @@
 // give vector structs += and -= operators
 // camera follows player
 // check the +/- 5 in character collision
+// basic menu
 
 int main()
 {
