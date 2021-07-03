@@ -25,6 +25,9 @@
 // camera follows player
 // check the +/- 5 in character collision
 // basic menu
+// mulitple threads for server
+// levels with images
+// store current working directory in a variable. then get all file directories from that 
 
 int main()
 {

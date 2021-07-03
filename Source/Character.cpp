@@ -8,7 +8,6 @@ const float GRAVITY = 0.5;
 
 Character::Character(int setID)
 {
-	isAlive = true;
 	init(setID);
 }
 
@@ -17,10 +16,11 @@ void Character::init(int newid)
 	id = newid;
 	sprite.setSize(sf::Vector2f(50, 100));
 	sprite.setFillColor(sf::Color::Black);
-	m_pos = { 500, 500 };
+	m_pos = { 500, 300 };
 	m_vel = { 0, 0 };
 	sprite.setPosition(m_pos.x, m_pos.y);
 	m_onSurface = false;
+	isAlive = true;
 }
 
 void Character::update(std::vector<sf::RectangleShape>& platforms)

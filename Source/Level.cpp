@@ -57,10 +57,11 @@ void Level::loadLevel(std::string lvlName)
 {
 	levelName = lvlName;
 
-	// image of the same name
+	// Load the platform data out of the .txt files
 
 	// this uses a relative path to find the levels folder. using one set of ../ selects the first parent directory
-	std::ifstream levelFile("../levels/" + lvlName);
+
+	std::ifstream levelFile("levels/" + lvlName + ".txt");
 	std::string fileLine;
 
 	if (levelFile.is_open())
@@ -73,4 +74,8 @@ void Level::loadLevel(std::string lvlName)
 	}
 	else
 		std::cout << "Unable to open level file\n";
+
+	// load the background image for the level. this is drawn on top of the actual platforms
+	m_levelTexture.loadFromFile("levels/" + lvlName + ".png");
+	levelBGSprite.setTexture(m_levelTexture, true);
 }

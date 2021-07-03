@@ -7,6 +7,9 @@ Packet::Packet()
 
 void Packet::sendToPeer(ENetPeer* peer, UDP reliability)
 {
+	if (!this)
+		return;
+
 	ENetPacket* enetPacket;
 	if (reliability == UDP::RELIABLE)
 		enetPacket = enet_packet_create(this, getSize(), ENET_PACKET_FLAG_RELIABLE);
@@ -17,6 +20,9 @@ void Packet::sendToPeer(ENetPeer* peer, UDP reliability)
 
 void Packet::sendToAllPeers(ENetHost* host, UDP reliability)
 {
+	if (!this)
+		return;
+
 	ENetPacket* enetPacket;
 	if (reliability == UDP::RELIABLE)
 		enetPacket = enet_packet_create(this, getSize(), ENET_PACKET_FLAG_RELIABLE);

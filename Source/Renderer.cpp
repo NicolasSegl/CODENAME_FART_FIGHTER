@@ -33,4 +33,5 @@ void Renderer::renderLevel(Level* level)
 {
 	for (auto& platform : level->getPlatforms())
 		m_window->draw(platform);
+	m_window->draw(level->levelBGSprite);
 }

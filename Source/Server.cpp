@@ -9,7 +9,7 @@ Server::Server()
 	isHosting = false;
 
 	// setup the level (TEST ONLY FOR NOW)
-	m_level->loadLevel("test.txt");
+	m_level->loadLevel("test");
 }
 
 void Server::shutdown()
@@ -122,7 +122,8 @@ void Server::clientDisconnect(Packet* packet)
 	std::cout << "Client " << packet->clientID << " has disconnected\n";
 
 	// send the client disconnect packet to other clients as well, so they can handle the disconnection of a client
-	packet->sendToAllPeers(m_serverHost, UDP::RELIABLE);
+	EntityUpdatePacket* newPacket = (EntityUpdatePacket*)(packet);
+	newPacket->sendToAllPeers(m_serverHost, UDP::RELIABLE);
 }
 
 void Server::receiveAcknowledgement(Packet* packet, ENetPeer* peer)

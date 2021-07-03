@@ -12,11 +12,13 @@ class Level
 {
 private:
 	std::vector<sf::RectangleShape> m_platforms;
+	sf::Texture m_levelTexture;
 
 	void extractPlatformData(std::stringstream ss);
 
 public:
 	std::string levelName;
+	sf::Sprite levelBGSprite;
 
 	Level() {}
 	Level(std::string levelName);

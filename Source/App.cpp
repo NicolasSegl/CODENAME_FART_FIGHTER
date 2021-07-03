@@ -75,14 +75,17 @@ void App::run()
 		if (m_server.isHosting)
 		{
 	//		m_server.update();
-			m_server.renderClients(m_window);
+
+			// render clients AFTER rendering the level
 			m_renderer.renderLevel(m_server.getLevel());
+			m_server.renderClients(m_window);
 		}
 		else
 		{
 			m_client.update();
-			m_renderer.renderClients(m_client);
+			// render clients AFTER rendering the level
 			m_renderer.renderLevel(m_client.getLevel());
+			m_renderer.renderClients(m_client);
 		}
 
 		m_renderer.updateWindow();

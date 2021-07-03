@@ -78,7 +78,7 @@ void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
 	}
 
 	m_serverCharacters.push_back(receivedPacket->newCharacter);
-	m_serverCharacters[m_serverCharacters.size() - 1].init();
+	m_serverCharacters[m_serverCharacters.size() - 1].init(receivedPacket->clientID);
 
 	if (!receivedPacket->connected)
 		m_serverCharacters[m_serverCharacters.size() - 1].connected = false;
