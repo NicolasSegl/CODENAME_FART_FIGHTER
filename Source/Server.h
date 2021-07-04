@@ -38,7 +38,6 @@ public:
 	virtual void update();
 	void start(std::string ip);
 	void handleClients();
-	void renderClients(sf::RenderWindow& window);
 
 	void shutdown();
 };

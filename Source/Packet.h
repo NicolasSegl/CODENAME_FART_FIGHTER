@@ -4,7 +4,9 @@
 #include "Character.h"
 #include <enet/enet.h>
 
-enum class PacketRequest
+// The enumeration variable sent in every packet should be as small as possible. 
+// As suchm it is only 8 bits. The same is done with the UDP enum class
+enum class PacketRequest : uint8_t
 {
 	AcknowledgeID,
 	SendID,
@@ -15,7 +17,7 @@ enum class PacketRequest
 	LoadLevel,
 };
 
-enum class UDP
+enum class UDP : uint8_t
 {
 	RELIABLE,
 	UNRELIABLE,
@@ -32,6 +34,9 @@ struct Packet
 	void sendToAllPeers(ENetHost* host, UDP reliability);
 
 	virtual int getSize() { return sizeof(*this); }
+
+private:
+	ENetPacket* createEnetPacket(UDP reliability);
 };
 
 struct EntityUpdatePacket : public Packet

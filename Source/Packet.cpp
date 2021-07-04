@@ -5,29 +5,24 @@ Packet::Packet()
 {
 }
 
-void Packet::sendToPeer(ENetPeer* peer, UDP reliability)
+ENetPacket* Packet::createEnetPacket(UDP reliability)
 {
-	if (!this)
-		return;
+	static ENetPacket* enetPacket;
 
-	ENetPacket* enetPacket;
 	if (reliability == UDP::RELIABLE)
 		enetPacket = enet_packet_create(this, getSize(), ENET_PACKET_FLAG_RELIABLE);
 	else
 		enetPacket = enet_packet_create(this, getSize(), 0);
-	enet_peer_send(peer, 0, enetPacket);
+
+	return enetPacket;
+}
+
+void Packet::sendToPeer(ENetPeer* peer, UDP reliability)
+{
+	enet_peer_send(peer, 0, createEnetPacket(reliability));
 }
 
 void Packet::sendToAllPeers(ENetHost* host, UDP reliability)
 {
-	if (!this)
-		return;
-
-	ENetPacket* enetPacket;
-	if (reliability == UDP::RELIABLE)
-		enetPacket = enet_packet_create(this, getSize(), ENET_PACKET_FLAG_RELIABLE);
-	else
-		enetPacket = enet_packet_create(this, getSize(), 0);
-
-	enet_host_broadcast(host, 0, enetPacket);
+	enet_host_broadcast(host, 0, createEnetPacket(reliability));
 }

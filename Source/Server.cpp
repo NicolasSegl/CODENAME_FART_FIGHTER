@@ -40,13 +40,14 @@ Server::~Server()
 std::mutex mutex;
 void Server::sendData()
 {
+	static EntityUpdatePacket packet;
+	packet.packetRequest = PacketRequest::EntityUpdate;
+
 	for (auto& client : m_clients)
 	{
 		if (!client->connected)
 			continue;
 
-		static EntityUpdatePacket packet;
-		packet.packetRequest = PacketRequest::EntityUpdate;
 		packet.clientID = client->id;
 		packet.position = client->character->getPos();
 		packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
@@ -231,11 +232,4 @@ void Server::update()
 	// comment sendData out if there are problems XDDDDD
 	sendData();
 	mutex.unlock();
-}
-
-void Server::renderClients(sf::RenderWindow& window)
-{
-	for (auto& client : m_clients)
-		if (client->connected)
-			window.draw(client->character->sprite);
 }

@@ -1,6 +1,7 @@
 #include "App.h"
 #include <iostream>
 #include <enet/enet.h>
+#include <filesystem>
 
 // maybe just a thread for every client for the server? so 5 clients connected to a server would result in the server using 5 threads to send the data
 // ctrl-f new, then clean up memory leaks
@@ -16,21 +17,18 @@
 // BECOME COMMENT MAN. FUNCTIONS HAVE DESCRIPTIONS ABOVE THEM, THEIR PURPOSE. AAAAAAAAAAAAAAAA
 // RECEIVE PACKETS ON CLIENT ON ANOTHER THREAD
 // beef rod hitboxes
-// make release work
-// put levels folder in release folder as well
 // see client disconnect
-// so server host can play too
 // if you fall off pull em back up
 // give vector structs += and -= operators
-// camera follows player
 // check the +/- 5 in character collision
 // basic menu
 // mulitple threads for server
 // levels with images
-// store current working directory in a variable. then get all file directories from that 
 
 int main()
 {
+	CURRENT_WORKING_DIRECTORY = std::filesystem::current_path().string();
+
 	// initialize ENet
 	if (enet_initialize() != 0)
 	{

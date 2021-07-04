@@ -1,7 +1,8 @@
 #include "Level.h"
+#include "utils.h"
+
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 
 // the data format (i.e. in the text files) for levels is as follows
 enum class PlatformProperties
@@ -61,7 +62,7 @@ void Level::loadLevel(std::string lvlName)
 
 	// this uses a relative path to find the levels folder. using one set of ../ selects the first parent directory
 
-	std::ifstream levelFile("levels/" + lvlName + ".txt");
+	std::ifstream levelFile(CURRENT_WORKING_DIRECTORY + "levels\\" + lvlName + ".txt");
 	std::string fileLine;
 
 	if (levelFile.is_open())
@@ -76,6 +77,6 @@ void Level::loadLevel(std::string lvlName)
 		std::cout << "Unable to open level file\n";
 
 	// load the background image for the level. this is drawn on top of the actual platforms
-	m_levelTexture.loadFromFile("levels/" + lvlName + ".png");
+	m_levelTexture.loadFromFile(CURRENT_WORKING_DIRECTORY + "levels\\" + lvlName + ".png");
 	levelBGSprite.setTexture(m_levelTexture, true);
 }

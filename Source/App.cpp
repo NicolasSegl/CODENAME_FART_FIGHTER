@@ -60,6 +60,7 @@ void App::setup()
 		std::string ip;
 		std::getline(std::cin, ip);
 		m_server.start(ip);
+		m_client.connectToIp(ip);
 	}
 }
 
@@ -72,19 +73,12 @@ void App::run()
 		handleEvents();
 		m_renderer.clearWindow();
 
-		if (m_server.isHosting)
-		{
-	//		m_server.update();
+		m_client.update();
 
-			// render clients AFTER rendering the level
-			m_renderer.renderLevel(m_server.getLevel());
-			m_server.renderClients(m_window);
-		}
-		else
+		// render clients AFTER rendering the level, and only if the client has actually connected
+		if (m_client.connected)
 		{
-			m_client.update();
-			// render clients AFTER rendering the level
-			m_renderer.renderLevel(m_client.getLevel());
+			m_renderer.renderLevel(m_server.getLevel());
 			m_renderer.renderClients(m_client);
 		}
 
