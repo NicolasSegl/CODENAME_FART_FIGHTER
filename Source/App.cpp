@@ -80,7 +80,7 @@ void App::run()
 		delta = currentFrame - lastFrame;
 
 		handleEvents();
-		m_client.update();
+		m_client.receiveData();
 
 		// this ensures that the character is only updated 60 times a second 
 		if (delta.count() >= 1000 / GAME_FPS_CAP) // 1000 being the number of milliseconds
@@ -88,19 +88,17 @@ void App::run()
 			//m_renderer.clearWindow();
 			lastFrame = currentFrame;
 
-			if (m_client.connected)
-				m_client.updateCharacter();
-		}
-
-		// even if our client's character hasn't updated, render the positions of all clients anyway (as they could have been updated)
-		// not doing so can cause the rendering to be rather choppy
-		if (m_client.connected)
-		{
-			// render clients AFTER rendering the level, and only if the client has actually connected
 			m_renderer.renderLevel(m_client.getLevel());
-			m_renderer.renderClients(m_client);
-		}
 
-		m_renderer.updateWindow();
+			if (m_client.connected)
+			{
+				m_client.updateCharacter();
+				// render clients AFTER rendering the level, and only if the client has actually connected
+				m_renderer.renderClients(m_client);
+				m_client.sendData();
+			}
+
+			m_renderer.updateWindow();
+		}
 	}
 }

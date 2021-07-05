@@ -15,9 +15,6 @@ private:
 	ENetHost* m_clientHost;
 	std::vector<Character> m_serverCharacters;
 
-	virtual void sendData();
-	virtual void receiveData();
-
 	void receiveID();
 	void receiveNewEntity(NewEntityPacket* packetReceived);
 
@@ -40,5 +37,7 @@ public:
 
 	std::vector<Character>& getServerCharacters() { return m_serverCharacters; }
 
+	virtual void sendData();
+	virtual void receiveData();
 	virtual void update();
 };

@@ -92,6 +92,8 @@ void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
 void Client::receiveData()
 {
 	ENetEvent event;
+	int packetsReceived = 0;
+
 	while (enet_host_service(m_clientHost, &event, 0) > 0)
 	{
 		switch (event.type)
@@ -157,7 +159,7 @@ void Client::updateEntity()
 	sendPacket.position = { (int)character->sprite.getPosition().x, (int)character->sprite.getPosition().y };
 	sendPacket.packetRequest = PacketRequest::EntityUpdate;
 	sendPacket.clientID = id;
-	sendPacket.sendToPeer(m_peer, UDP::RELIABLE);
+	sendPacket.sendToPeer(m_peer, UDP::UNRELIABLE);
 }
 
 void Client::sendData()

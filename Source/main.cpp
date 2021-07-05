@@ -22,6 +22,7 @@
 // time based not frame based
 // client update gets its own thread, server sending and receiving data are different threads (may have to use mutexs)
 // when the server shutsdown, clients can reconnect
+// proper server shutdown
 
 int main()
 {

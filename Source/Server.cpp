@@ -40,6 +40,8 @@ Server::~Server()
 std::mutex mutex;
 void Server::sendData()
 {
+	Sleep(1);
+
 	static EntityUpdatePacket packet;
 	packet.packetRequest = PacketRequest::EntityUpdate;
 
@@ -50,7 +52,7 @@ void Server::sendData()
 
 		packet.clientID = client->id;
 		packet.position = client->character->getPos();
-		packet.sendToAllPeers(m_serverHost, UDP::RELIABLE);
+		packet.sendToAllPeers(m_serverHost, UDP::UNRELIABLE);
 	}
 }
 
@@ -154,6 +156,8 @@ void Server::receiveData()
 {
 	// iterate through all the packets received by the server
 	ENetEvent event;
+	int packetsReceived = 0; // so we can check how many packets we have received. if it exceeds a certain amount, break so we can send data (not receive).
+
 	while (enet_host_service(m_serverHost, &event, 0) > 0)
 	{
 		switch (event.type)
