@@ -82,6 +82,16 @@ void App::run()
 		handleEvents();
 		m_client.update();
 
+		// this ensures that the character is only updated 60 times a second 
+		if (delta.count() >= 1000 / GAME_FPS_CAP) // 1000 being the number of milliseconds
+		{
+			//m_renderer.clearWindow();
+			lastFrame = currentFrame;
+
+			if (m_client.connected)
+				m_client.updateCharacter();
+		}
+
 		// even if our client's character hasn't updated, render the positions of all clients anyway (as they could have been updated)
 		// not doing so can cause the rendering to be rather choppy
 		if (m_client.connected)
@@ -91,16 +101,6 @@ void App::run()
 			m_renderer.renderClients(m_client);
 		}
 
-		// this ensures that the character is only updated 60 times a second 
-		if (delta.count() >= 1000 / GAME_FPS_CAP) // 1000 being the number of milliseconds
-		{
-			//m_renderer.clearWindow();
-			lastFrame = currentFrame;
-
-			if (m_client.connected)
-				m_client.updateCharacter();
-
-			m_renderer.updateWindow();
-		}
+		m_renderer.updateWindow();
 	}
 }
