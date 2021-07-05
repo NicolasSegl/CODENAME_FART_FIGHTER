@@ -1,4 +1,5 @@
 #include "Server.h"
+
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -34,7 +35,6 @@ Server::~Server()
 	if (isHosting)
 		shutdown();
 	enet_host_destroy(m_serverHost);
-	delete m_level;
 }
 
 std::mutex mutex;

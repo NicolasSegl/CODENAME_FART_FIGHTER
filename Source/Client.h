@@ -36,6 +36,7 @@ public:
 	void init();
 	void serverCreationInit();
 	void disconnect();
+	void updateCharacter();
 
 	std::vector<Character>& getServerCharacters() { return m_serverCharacters; }
 

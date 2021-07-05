@@ -194,8 +194,11 @@ void Client::update()
 {
 	receiveData();
 	if (connected)
-	{
-		sendData();
+		sendData();	
+}
+
+void Client::updateCharacter()
+{
+	if (connected)
 		character->update(m_level->getPlatforms());
-	}
 }

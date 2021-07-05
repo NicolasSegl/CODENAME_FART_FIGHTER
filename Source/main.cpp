@@ -18,12 +18,15 @@
 // RECEIVE PACKETS ON CLIENT ON ANOTHER THREAD
 // beef rod hitboxes
 // see client disconnect
+// mutex
 // if you fall off pull em back up
 // give vector structs += and -= operators
 // check the +/- 5 in character collision
 // basic menu
 // mulitple threads for server
 // levels with images
+
+// client update gets its own thread, server sending and receiving data are different threads (may have to use mutexs)
 
 int main()
 {
