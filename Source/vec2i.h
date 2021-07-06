@@ -10,4 +10,6 @@ struct vec2i
 	vec2i& operator-=(const vec2i& vec);
 	vec2i operator+(const vec2i& vec);
 	vec2i operator-(const vec2i& vec);
+	bool operator==(const vec2i& vec);
+	bool operator!=(const vec2i& vec);
 };

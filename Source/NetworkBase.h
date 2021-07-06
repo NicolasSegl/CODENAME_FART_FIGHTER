@@ -17,7 +17,7 @@ public:
 	~NetworkBase();
 
 	virtual void update();
-	virtual void receiveData() = 0;
+	virtual void serviceHost() = 0;
 	virtual void sendData() = 0;
 
 	Level* getLevel() { return m_level; }

@@ -23,3 +23,13 @@ vec2i vec2i::operator-(const vec2i& vec)
 {
 	return vec2i(x - vec.x, y - vec.y);
 }
+
+bool vec2i::operator==(const vec2i& vec)
+{
+	return x == vec.x && y == vec.y;
+}
+
+bool vec2i::operator!=(const vec2i& vec)
+{
+	return x != vec.x || y != vec.y;
+}

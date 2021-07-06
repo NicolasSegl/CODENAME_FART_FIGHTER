@@ -33,6 +33,7 @@ public:
 	void setPos(vec2i newPos) { m_pos = newPos; }
 
 	void updateFromServer(EntityUpdatePacket* packet);
+	bool hasChangedState();
 
 	void init(int newId = -1);
 	void update(std::vector<sf::RectangleShape>& platforms);

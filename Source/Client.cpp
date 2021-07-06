@@ -57,6 +57,8 @@ void Client::sendID(Packet* packetReceived)
 	packet.clientID = id;
 	packet.sendToPeer(m_peer, UDP::RELIABLE);;
 	connected = true;
+
+	//static std::thread receiveDataThread = std::thread(&Client::receiveData, this);
 }
 
 void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
@@ -89,7 +91,7 @@ void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
 		character = &m_serverCharacters[id];
 }
 
-void Client::receiveData()
+void Client::serviceHost()
 {
 	ENetEvent event;
 	int packetsReceived = 0;
@@ -157,7 +159,6 @@ void Client::updateEntity()
 {
 	static EntityUpdatePacket sendPacket;
 	sendPacket.position = { (int)character->sprite.getPosition().x, (int)character->sprite.getPosition().y };
-	sendPacket.packetRequest = PacketRequest::EntityUpdate;
 	sendPacket.clientID = id;
 	sendPacket.sendToPeer(m_peer, UDP::UNRELIABLE);
 }
@@ -190,13 +191,6 @@ void Client::receiveID()
 		std::cout << "Connection successful\n";
 	else
 		std::cout << "connection unsucessful\n";
-}
-
-void Client::update()
-{
-	receiveData();
-	if (connected)
-		sendData();	
 }
 
 void Client::updateCharacter()

@@ -2,6 +2,7 @@
 
 #include "Client.h"
 #include "level.h"
+#include "utils.h"
 
 #include <SFML/Graphics.hpp>
 #include <thread>
@@ -19,14 +20,14 @@ private:
 	std::thread m_hostThread;
 
 	virtual void sendData();
-	virtual void receiveData();
+	virtual void serviceHost();
 
 	bool clientInit();
 
 	void sendIDToClient(ENetPeer* peer);
 	void updateClientCharacterList();
 	void updateEntity(Packet* packet);
-	void clientDisconnect(Packet* packet);
+	void clientDisconnect(int id);
 	void receiveAcknowledgement(Packet* packet, ENetPeer* peer);
 
 public:

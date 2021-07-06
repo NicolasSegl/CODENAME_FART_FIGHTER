@@ -9,4 +9,6 @@ struct vec2f
 	vec2f& operator-=(const vec2f& vec);
 	vec2f operator+(const vec2f& vec);
 	vec2f operator-(const vec2f& vec);
+	bool operator==(const vec2f& vec);
+	bool operator!=(const vec2f& vec);
 };

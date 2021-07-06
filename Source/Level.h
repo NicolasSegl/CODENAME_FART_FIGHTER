@@ -19,6 +19,7 @@ private:
 public:
 	std::string levelName;
 	sf::Sprite levelBGSprite;
+	bool loaded = false;
 
 	Level() {}
 	Level(std::string levelName);

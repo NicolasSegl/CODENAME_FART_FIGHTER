@@ -42,18 +42,24 @@ private:
 struct EntityUpdatePacket : public Packet
 {
 	vec2i position;
+
 	int getSize() { return sizeof(*this); }
+	EntityUpdatePacket() { packetRequest = PacketRequest::EntityUpdate; }
 };
 
 struct NewEntityPacket : public Packet
 {
 	Character newCharacter;
 	bool connected = true;
+
 	int getSize() { return sizeof(*this); }
+	NewEntityPacket() { packetRequest = PacketRequest::EntityListChange; }
 };
 
 struct LevelPacket : public Packet
 {
 	char levelName[64];
+
 	int getSize() { return sizeof(*this); }
+	LevelPacket() { packetRequest = PacketRequest::LoadLevel; }
 };

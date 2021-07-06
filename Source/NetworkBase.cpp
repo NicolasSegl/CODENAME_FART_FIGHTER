@@ -16,6 +16,6 @@ NetworkBase::~NetworkBase()
 
 void NetworkBase::update()
 {
-	receiveData();
+	serviceHost();
 	sendData();
 }

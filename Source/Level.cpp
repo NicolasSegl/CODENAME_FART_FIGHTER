@@ -79,4 +79,6 @@ void Level::loadLevel(std::string lvlName)
 	// load the background image for the level. this is drawn on top of the actual platforms
 	m_levelTexture.loadFromFile(CURRENT_WORKING_DIRECTORY + "levels\\" + lvlName + ".png");
 	levelBGSprite.setTexture(m_levelTexture, true);
+
+	loaded = true;
 }

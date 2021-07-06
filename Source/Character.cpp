@@ -148,6 +148,20 @@ void Character::updateFromServer(EntityUpdatePacket* packet)
 	sprite.setPosition(m_pos.x, m_pos.y);
 }
 
+// if the character's state has changed in any way (animation, movement, etc), then return true
+bool Character::hasChangedState()
+{
+	static vec2i oldPosition = m_pos;
+
+	if (oldPosition != m_pos)
+	{
+		oldPosition = m_pos;
+		return true;
+	}
+	
+	return false;
+}
+
 // note that this copy instructor is crucial for sending the initial characters to the clients
 // when the server starts. without it, reading violations are thrown when trying to copy
 Character::Character(const Character& copyCharacter)

@@ -7,7 +7,6 @@ Renderer::Renderer()
 void Renderer::init(sf::RenderWindow* window)
 {
 	m_window = window;
-	//m_windowDimensions = { 1024, 768 };
 	m_window->create(sf::VideoMode(1024, 768), "FPG");
 	//m_window->setFramerateLimit(GAME_FPS_CAP);
 }
