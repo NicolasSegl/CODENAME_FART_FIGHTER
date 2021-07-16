@@ -83,7 +83,7 @@ void Client::receiveNewEntity(NewEntityPacket* receivedPacket)
 	m_serverCharacters[m_serverCharacters.size() - 1].init(receivedPacket->clientID);
 
 	if (!receivedPacket->connected)
-		m_serverCharacters[m_serverCharacters.size() - 1].connected = false;
+		m_serverCharacters[receivedPacket->clientID].connected = false;
 
 	// due to the memory allocation when an std::vector calls ::push_back(), this is necessary
 	// otherwise, it will be pointing to some random point in memory (of which std::vector has deleted)
@@ -136,7 +136,7 @@ void Client::serviceHost()
 					{
 						std::cout << "A client has disconnected\n";
 						// This will render the character dead, and make it as though the character isn't there at all.
-						m_serverCharacters[packetReceived->clientID].isAlive = false;
+						m_serverCharacters[packetReceived->clientID].connected = false;
 						break;
 					}
 					case PacketRequest::LoadLevel:

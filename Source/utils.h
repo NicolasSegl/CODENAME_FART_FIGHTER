@@ -6,6 +6,8 @@
 #include <string>
 
 const int GAME_FPS_CAP = 60;
-static std::string CURRENT_WORKING_DIRECTORY;
+extern std::string CURRENT_WORKING_DIRECTORY;
+extern int WINDOW_WIDTH;
+extern int WINDOW_HEIGHT;
 
 void clamp(float* valueToClamp, float clampValue, float low, float high);

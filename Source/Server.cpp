@@ -100,6 +100,7 @@ void Server::updateClientCharacterList()
             packet.connected = false;
         else
         {
+            packet.connected = true;
             packet.newCharacter = *(m_clients[id]->character);
             packet.newCharacter.id = m_clients[id]->character->id;
         }
@@ -216,7 +217,7 @@ void Server::serviceHost()
                     peers.erase(peers.begin() + index);
 
                     // if the client has already disconnected, no need to disconnect it again
-                    if (!m_clients[index]->connected)
+                    if (m_clients[index]->connected)
                     {
                         clientDisconnect(index);
                         std::cout << "Client " << index << " has timed out\n";

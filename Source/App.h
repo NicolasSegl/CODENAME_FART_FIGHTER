@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include "utils.h"
 #include "Client.h"
 #include "Server.h"
 #include "Renderer.h"
+#include "MenuHandler.h"
 
 class App
 {
@@ -13,13 +13,13 @@ private:
 	sf::RenderWindow m_window;
 	bool m_running;
 	Renderer m_renderer;
+	MenuHandler m_menuHandler;
 
 	Client m_client;
 	Server m_server;
 
 	void handleEvents();
 	void close();
-	void setup();
 
 public:
 	App();

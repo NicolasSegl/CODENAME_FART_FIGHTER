@@ -18,6 +18,24 @@ void Renderer::renderClients(Client& client)
 			m_window->draw(character.sprite);
 }
 
+void Renderer::renderWidget(MenuWidget* menuButton)
+{
+	m_window->draw(menuButton->getSFObject());
+	m_window->draw(menuButton->getSFTextObject());
+}
+
+void Renderer::renderMenu(Menu* menu)
+{
+	if (!menu->menuOpen)
+		return;
+
+	m_window->draw(*(menu->getBackground()));
+	for (auto& button : menu->getButtons())
+		renderWidget(button);
+	for (auto& inputBox : menu->getInputBoxes())
+		renderWidget(inputBox);
+}
+
 void Renderer::updateWindow()
 {
 	m_window->display();

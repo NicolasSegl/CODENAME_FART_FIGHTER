@@ -18,11 +18,17 @@
 // can only change size of window in settings. full screen option too
 // make server only send data when it needs to (if player moved, or had any other change of state)
 // when adding animations and such, mind Character::hasChangedState()
+// check reliability of packets. it may be causing the clunkiness
+// rescale players too when window size changes. ALSO BUTTONS/MENUS
+// keep options saved : config file
+
+// global extern variable definitions
+std::string CURRENT_WORKING_DIRECTORY = std::filesystem::current_path().string();
+int WINDOW_WIDTH = 1024;
+int WINDOW_HEIGHT = 768;
 
 int main()
 {
-	CURRENT_WORKING_DIRECTORY = std::filesystem::current_path().string();
-
 	// initialize ENet
 	if (enet_initialize() != 0)
 	{

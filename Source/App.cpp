@@ -1,6 +1,6 @@
 #include "App.h"
 #include "Character.h"
-
+#include "MenuHandler.h"
 #include "Client.h"
 #include "Server.h"
 #include "Level.h"
@@ -35,40 +35,55 @@ void App::handleEvents()
 {
 	sf::Event event;
 	while (m_window.pollEvent(event))
+	{
 		if (event.type == sf::Event::Closed)
 			close();
-}
+		else if (event.type == sf::Event::MouseButtonPressed && m_menuHandler.aMenuIsOpen)
+		{
+			if (event.mouseButton.button == sf::Mouse::Left)
+			{
+				int mx = sf::Mouse::getPosition(m_window).x;
+				int my = sf::Mouse::getPosition(m_window).y;
+				m_menuHandler.select(mx, my);
+			}
+		}
+		else if (event.type == sf::Event::TextEntered)
+		{
+			MenuResponseData* menuResponse = m_menuHandler.enterText(event.text.unicode);
+			if (menuResponse == nullptr)
+				continue;
 
-// ask the user if this will be a server of client, then setup accordingly
-void App::setup()
-{
-	std::cout << "s for server, c for client: ";
-	char input;
-	std::cin >> input;
-	std::cin.ignore();
+			switch (menuResponse->response)
+			{
+				case MenuResponse::HostOnIp:
+				case MenuResponse::ConnectToIp:
+				{
+					if (m_client.connected)
+						m_client.disconnect();
+					if (m_server.isHosting)
+						m_server.shutdown();
 
-	if (input == 'c')
-	{
-		std::cout << "enter the server ip address: ";
-		std::string ipString;
-		std::getline(std::cin, ipString);
-		m_client.connectToIp(ipString);
-		std::cout << m_client.id << std::endl;
+					IPResponse* ipResponse = (IPResponse*)(menuResponse);
+
+					if (menuResponse->response == MenuResponse::HostOnIp)
+						m_server.start(std::string(ipResponse->ip));
+
+					if (m_client.connectToIp(std::string(ipResponse->ip)))
+						m_menuHandler.close();
+					
+					delete ipResponse;
+					break;
+				}
+				default:
+					break;
+			}
+		}
 	}
-	else if (input == 's')
-	{
-		std::cout << "Enter server ip to be hosted on: ";
-		std::string ip;
-		std::getline(std::cin, ip);
-		m_server.start(ip);
-		m_client.connectToIp(ip);
-	}
+	// if enter ip menu is open...
 }
 
 void App::run()
 {
-	setup();
-	
 	// these will be used to artificially lower the framerate, which will greatly decrease lag
 	std::chrono::system_clock::time_point currentFrame = std::chrono::system_clock::now();
 	std::chrono::system_clock::time_point lastFrame    = std::chrono::system_clock::now();;
@@ -80,6 +95,8 @@ void App::run()
 		delta = currentFrame - lastFrame;
 
 		handleEvents();
+		// do all of this only if main menu is not open:
+
 		m_client.serviceHost();
 
 		// this ensures that the character is only updated 60 times a second 
@@ -92,12 +109,17 @@ void App::run()
 
 			if (m_client.connected)
 			{
-				if (m_client.getLevel()->loaded)
+				if (m_client.getLevel()->loaded && !m_menuHandler.aMenuIsOpen)
 					m_client.updateCharacter();
+
 				// render clients AFTER rendering the level, and only if the client has actually connected
 				m_renderer.renderClients(m_client);
 				m_client.sendData();
 			}
+
+			if (m_menuHandler.aMenuIsOpen)
+				for (auto& menu : m_menuHandler.getMenus())
+					m_renderer.renderMenu(menu);
 
 			m_renderer.updateWindow();
 		}
