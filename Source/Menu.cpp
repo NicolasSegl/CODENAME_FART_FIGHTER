@@ -17,10 +17,11 @@ void Menu::addButton
 void Menu::addTextInputBox
 (
 	int width, int height, int posx, int posy,
-	sf::Color fillColour, sf::Color outlineColour, int outlineWidth, int fontSize
+	sf::Color fillColour, sf::Color outlineColour, int outlineWidth, 
+	int fontSize, bool selected
 )
 {
-	MenuInputBox* newInputBox = new MenuInputBox(width, height, posx, posy, fillColour, outlineColour, outlineWidth, "", fontSize);
+	MenuInputBox* newInputBox = new MenuInputBox(width, height, posx, posy, fillColour, outlineColour, outlineWidth, "", fontSize, selected);
 	m_inputBoxes.push_back(newInputBox);
 }
 

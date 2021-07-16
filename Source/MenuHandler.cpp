@@ -36,12 +36,12 @@ void MenuHandler::initializeMainMenu()
 
 	Menu* hostServerMenu = new Menu;
 	hostServerMenu->setBackground(sf::Color::White);
-	hostServerMenu->addTextInputBox(500, 150, WINDOW_WIDTH / 2 - 500 / 2, WINDOW_HEIGHT / 2 - 150 / 2, sf::Color::White, sf::Color::Black, 5, 36);
+	hostServerMenu->addTextInputBox(500, 150, WINDOW_WIDTH / 2 - 500 / 2, WINDOW_HEIGHT / 2 - 150 / 2, sf::Color::White, sf::Color::Black, 5, 36, true);
 	m_menus.push_back(hostServerMenu);
 
 	Menu* connectServerMenu = new Menu;
 	connectServerMenu->setBackground(sf::Color::White);
-	connectServerMenu->addTextInputBox(500, 150, WINDOW_WIDTH / 2 - 500 / 2, WINDOW_HEIGHT / 2 - 150 / 2, sf::Color::White, sf::Color::Black, 5, 36);
+	connectServerMenu->addTextInputBox(500, 150, WINDOW_WIDTH / 2 - 500 / 2, WINDOW_HEIGHT / 2 - 150 / 2, sf::Color::White, sf::Color::Black, 5, 36, true);
 	m_menus.push_back(connectServerMenu);
 }
 

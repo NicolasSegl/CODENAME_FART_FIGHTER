@@ -8,10 +8,11 @@ MenuInputBox::MenuInputBox
 (
 	int width, int height, int posx, int posy,
 	sf::Color fillColour, sf::Color outlineColour, int outlineWidth,
-	std::string text, int fontSize
+	std::string text, int fontSize, bool selected
 )
 	: MenuWidget(width, height, posx, posy, fillColour, outlineColour, outlineWidth, text, fontSize)
 {
+	isSelected = selected;
 }
 
 bool MenuInputBox::select(int mx, int my)
@@ -27,7 +28,10 @@ bool MenuInputBox::select(int mx, int my)
 void MenuInputBox::enterText(int character)
 {
 	if (character == UNICODE_BACKSPACE)
-		m_inputBoxString.erase(m_inputBoxString.begin() + m_inputBoxString.size() - 1);
+	{
+		if (m_inputBoxString.length() >= 1)
+			m_inputBoxString.erase(m_inputBoxString.begin() + m_inputBoxString.size() - 1);
+	}
 	else
 		m_inputBoxString += character;
 

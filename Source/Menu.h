@@ -29,7 +29,7 @@ public:
 	(
 		int width, int height, int posx, int posy,
 		sf::Color fillColour, sf::Color outlineColour, int outlineWidth,
-		int fontSize = 12
+		int fontSize = 12, bool selected = true
 	);
 
 	void setBackgroundFromFile(std::string imageName);

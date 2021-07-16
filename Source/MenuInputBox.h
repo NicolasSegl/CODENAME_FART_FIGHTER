@@ -15,7 +15,7 @@ public:
 	(
 		int width, int height, int posx, int posy,
 		sf::Color fillColour, sf::Color outlineColour, int outlineWidth,
-		std::string text = "", int fontSize = 12
+		std::string text = "", int fontSize = 12, bool selected = true
 	);
 
 	virtual bool select(int mx, int my);
